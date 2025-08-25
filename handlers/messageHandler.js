@@ -1,5 +1,6 @@
 const config = require('../config/botConfig');
 const utils = require('../utils/helpers');
+const db = require('../database/database');
 
 // Get guild-specific prefix
 function getGuildPrefix(guildId) {
@@ -109,6 +110,15 @@ async function handleMessage(client, message) {
     // Execute command
     try {
         await command.execute(message, args, client);
+        
+        // Log command usage statistics
+        try {
+            db.updateUserData(message.author.id, message.author.username, message.author.discriminator);
+            db.logCommandUsage(message.guild?.id || 'dm', message.author.id, command.name);
+        } catch (dbError) {
+            console.error('Error logging command usage:', dbError);
+        }
+        
     } catch (error) {
         console.error(`Error executing command ${command.name}:`, error);
         const embed = utils.createEmbed(

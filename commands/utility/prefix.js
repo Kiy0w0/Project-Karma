@@ -1,44 +1,24 @@
 const { EmbedBuilder } = require('discord.js');
 const config = require('../../config/botConfig');
-const fs = require('fs');
-const path = require('path');
-
-// Simple JSON database for server prefixes
-const prefixFile = path.join(__dirname, '../../data/prefixes.json');
-
-// Ensure data directory and file exist
-function ensurePrefixFile() {
-    const dataDir = path.dirname(prefixFile);
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-    }
-    if (!fs.existsSync(prefixFile)) {
-        fs.writeFileSync(prefixFile, '{}');
-    }
-}
+const db = require('../../database/database');
 
 // Get prefix for a guild
 function getGuildPrefix(guildId) {
-    ensurePrefixFile();
     try {
-        const data = JSON.parse(fs.readFileSync(prefixFile, 'utf8'));
-        return data[guildId] || config.prefix;
+        const settings = db.getGuildSettings(guildId);
+        return settings.prefix || config.prefix;
     } catch (error) {
-        console.error('Error reading prefix file:', error);
+        console.error('Error getting guild prefix:', error);
         return config.prefix;
     }
 }
 
 // Set prefix for a guild
 function setGuildPrefix(guildId, newPrefix) {
-    ensurePrefixFile();
     try {
-        const data = JSON.parse(fs.readFileSync(prefixFile, 'utf8'));
-        data[guildId] = newPrefix;
-        fs.writeFileSync(prefixFile, JSON.stringify(data, null, 2));
-        return true;
+        return db.setGuildPrefix(guildId, newPrefix);
     } catch (error) {
-        console.error('Error writing prefix file:', error);
+        console.error('Error setting guild prefix:', error);
         return false;
     }
 }

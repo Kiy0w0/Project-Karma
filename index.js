@@ -7,6 +7,8 @@ require('dotenv').config();
 const { loadCommands } = require('./handlers/commandHandler');
 const { handleMessage } = require('./handlers/messageHandler');
 const config = require('./config/botConfig');
+const loggingHandler = require('./handlers/loggingHandler');
+const db = require('./database/database');
 
 // Create a new client instance
 const client = new Client({
@@ -85,6 +87,16 @@ client.on('guildDelete', (guild) => {
     console.log(`😢 Left server: ${guild.name} (${guild.id})`);
 });
 
+// Logging Events
+client.on('messageDelete', loggingHandler.handleMessageDelete);
+client.on('messageUpdate', loggingHandler.handleMessageUpdate);
+client.on('guildMemberAdd', loggingHandler.handleMemberJoin);
+client.on('guildMemberRemove', loggingHandler.handleMemberRemove);
+client.on('channelCreate', loggingHandler.handleChannelCreate);
+client.on('channelDelete', loggingHandler.handleChannelDelete);
+client.on('roleCreate', loggingHandler.handleRoleCreate);
+client.on('roleDelete', loggingHandler.handleRoleDelete);
+
 // Error handling
 client.on('error', console.error);
 client.on('warn', console.warn);
@@ -92,6 +104,27 @@ client.on('warn', console.warn);
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
 });
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+    console.log('\n🔄 Shutting down gracefully...');
+    db.cleanup();
+    db.close();
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n🔄 Shutting down gracefully...');
+    db.cleanup();
+    db.close();
+    process.exit(0);
+});
+
+// Database cleanup every 24 hours
+setInterval(() => {
+    console.log('🧹 Running database cleanup...');
+    db.cleanup();
+}, 24 * 60 * 60 * 1000);
 
 // Login to Discord
 client.login(process.env.DISCORD_TOKEN).catch(error => {

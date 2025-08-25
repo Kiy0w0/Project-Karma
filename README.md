@@ -8,7 +8,9 @@
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
 ![Status](https://img.shields.io/badge/status-ready-brightgreen?style=for-the-badge)
-![Commands](https://img.shields.io/badge/commands-15+-orange?style=for-the-badge)
+![Commands](https://img.shields.io/badge/commands-20+-orange?style=for-the-badge)
+![Database](https://img.shields.io/badge/database-SQLite-blue?style=for-the-badge)
+[![Sponsor](https://img.shields.io/badge/sponsor-❤️-ff69b4?style=for-the-badge)](https://github.com/sponsors/Kiy0w0)
 
 </div>
 
@@ -16,7 +18,7 @@
 
 ## ✨ Key Features
 
-• 📋 **Modular Commands** • ⚙️ **Custom Prefix** • 🛡️ **Error Handling** • 📊 **Analytics**
+• 📋 **Modular Commands** • ⚙️ **Custom Prefix** • 🛡️ **Error Handling** • 📊 **Analytics** • 📝 **Message Logging** • 💾 **SQL Database**
 
 
 ## 🚀 Quick Start
@@ -47,6 +49,9 @@ npm start
 | | `!invite` | Link invite bot |
 | | `!stats` | Statistik global |
 | **Utility** | `!prefix` | Lihat/ubah prefix server |
+| | `!logging` | Setup message logging |
+| | `!logs` | Lihat audit logs |
+| | `!dbstats` | Statistik database |
 | **Moderation** | `!clear` | Hapus pesan |
 
 ## 🛠️ Development
@@ -99,7 +104,7 @@ MIT License © [Kiy0w0](https://github.com/kiy0w0)
 
 <div align="center">
 
-**[⭐ Star this repo](https://github.com/kiy0w0/project-karma)** • **[🐛 Report Issue](https://github.com/kiy0w0/project-karma/issues)** • **[💬 Discord](https://discord.gg/)**
+**[⭐ Star this repo](https://github.com/kiy0w0/project-karma)** • **[🐛 Report Issue](https://github.com/kiy0w0/project-karma/issues)** • **[💖 Sponsor](https://github.com/sponsors/Kiy0w0)** • **[💬 Discord](https://discord.gg/)**
 
 Made with ❤️ for the Discord community
 
