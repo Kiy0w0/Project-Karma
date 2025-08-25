@@ -41,13 +41,13 @@ npm start
 
 | Category | Command | Description |
 |----------|---------|-------------|
-| **General** | `!help` | Menampilkan daftar command |
-| | `!ping` | Cek latency bot |
-| | `!info` | Informasi bot |
-| | `!invite` | Link invite bot |
-| | `!stats` | Statistik global |
-| **Utility** | `!prefix` | Lihat/ubah prefix server |
-| **Moderation** | `!clear` | Hapus pesan |
+| **General** | `!help` | Command List |
+| | `!ping` | Latency Bot |
+| | `!info` | Bot Info |
+| | `!invite` |  Bot Invite Link |
+| | `!stats` | Global Stas for bot |
+| **Utility** | `!prefix` | Change Prefix |
+| **Moderation** | `!clear` | Remove Messages |
 
 ## 🛠️ Development
 
