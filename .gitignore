@@ -39,6 +39,12 @@ cache/
 commands/utility/testdb.js
 test-database.js
 
+# SQLite temporary files
+*.db-shm
+*.db-wal
+database/*.db-shm
+database/*.db-wal
+
 # Package lock files (optional - uncomment if needed)
 # package-lock.json
 # yarn.lock
