@@ -36,6 +36,8 @@ Thumbs.db
 bot_data/
 temp/
 cache/
+commands/utility/testdb.js
+test-database.js
 
 # Package lock files (optional - uncomment if needed)
 # package-lock.json
