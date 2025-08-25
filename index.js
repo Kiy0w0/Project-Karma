@@ -9,6 +9,7 @@ const { handleMessage } = require('./handlers/messageHandler');
 const config = require('./config/botConfig');
 const loggingHandler = require('./handlers/loggingHandler');
 const db = require('./database/database');
+const { ActivityType } = require('discord.js');
 
 // Create a new client instance
 const client = new Client({
@@ -29,21 +30,64 @@ client.cooldowns = new Collection();
 // Load commands
 loadCommands(client);
 
+// Rich Presence Status Array
+const statusList = [
+    { name: '{servers} servers | {prefix}help', type: ActivityType.Watching },
+    { name: '{users} users | {prefix}help', type: ActivityType.Listening },
+    { name: 'with {commands} commands', type: ActivityType.Playing },
+    { name: 'for {prefix}help commands', type: ActivityType.Watching },
+    { name: 'to community feedback', type: ActivityType.Listening },
+    { name: 'Karma Bot v1.0 | {prefix}help', type: ActivityType.Playing },
+    { name: 'over {channels} channels', type: ActivityType.Watching }
+];
+
+let currentStatusIndex = 0;
+
+// Function to update bot presence
+function updatePresence() {
+    if (!client.user) return;
+    
+    const serverCount = client.guilds.cache.size;
+    const userCount = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
+    const channelCount = client.channels.cache.size;
+    const commandCount = client.commands.size;
+    
+    const status = statusList[currentStatusIndex];
+    const statusText = status.name
+        .replace('{servers}', serverCount)
+        .replace('{users}', userCount.toLocaleString())
+        .replace('{channels}', channelCount)
+        .replace('{commands}', commandCount)
+        .replace('{prefix}', config.prefix);
+    
+    client.user.setPresence({
+        activities: [{
+            name: statusText,
+            type: status.type
+        }],
+        status: 'online'
+    });
+    
+    console.log(`🎭 Status updated: ${statusText}`);
+    
+    // Move to next status
+    currentStatusIndex = (currentStatusIndex + 1) % statusList.length;
+}
+
 // Event: Bot is ready
 client.once('ready', () => {
     console.log(`🚀 ${client.user.tag} is online!`);
     console.log(`📊 Serving ${client.guilds.cache.size} servers`);
     console.log(`👥 Watching over ${client.users.cache.size} users`);
     
-    // Set bot status with server count
-    const serverCount = client.guilds.cache.size;
-    client.user.setActivity(`${config.prefix}help | ${serverCount} servers`, { type: 'WATCHING' });
-    
-    // Update status every 30 minutes
-    setInterval(() => {
-        const currentServerCount = client.guilds.cache.size;
-        client.user.setActivity(`${config.prefix}help | ${currentServerCount} servers`, { type: 'WATCHING' });
-    }, 30 * 60 * 1000);
+    // Set initial presence
+    setTimeout(() => {
+        console.log('🎭 Starting Rich Presence...');
+        updatePresence();
+        
+        // Update presence every 30 seconds
+        setInterval(updatePresence, 30000);
+    }, 2000);
 });
 
 // Event: Message received
