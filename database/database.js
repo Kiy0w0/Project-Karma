@@ -104,6 +104,28 @@ class BotDatabase {
                 )
             `);
 
+            // Welcome settings table
+            this.db.exec(`
+                CREATE TABLE IF NOT EXISTS welcome_settings (
+                    guild_id TEXT PRIMARY KEY,
+                    enabled BOOLEAN DEFAULT FALSE,
+                    channel_id TEXT,
+                    welcome_enabled BOOLEAN DEFAULT FALSE,
+                    goodbye_enabled BOOLEAN DEFAULT FALSE,
+                    welcome_message TEXT,
+                    goodbye_message TEXT,
+                    welcome_count INTEGER DEFAULT 0,
+                    goodbye_count INTEGER DEFAULT 0,
+                    embed_enabled BOOLEAN DEFAULT TRUE,
+                    embed_color TEXT DEFAULT '#7289DA',
+                    ping_user BOOLEAN DEFAULT TRUE,
+                    delete_after INTEGER DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (guild_id) REFERENCES guild_settings (guild_id)
+                )
+            `);
+
             // Create indexes for better performance
             this.db.exec(`
                 CREATE INDEX IF NOT EXISTS idx_command_stats_guild ON command_stats(guild_id);
@@ -112,6 +134,7 @@ class BotDatabase {
                 CREATE INDEX IF NOT EXISTS idx_message_logs_guild ON message_logs(guild_id);
                 CREATE INDEX IF NOT EXISTS idx_message_logs_user ON message_logs(user_id);
                 CREATE INDEX IF NOT EXISTS idx_message_logs_timestamp ON message_logs(timestamp);
+                CREATE INDEX IF NOT EXISTS idx_welcome_settings_guild ON welcome_settings(guild_id);
             `);
 
             console.log('✅ Database tables created successfully');
@@ -308,6 +331,69 @@ class BotDatabase {
             stmt.run(guildId, channelId, messageId, userId, content, eventType, oldContent);
         } catch (error) {
             console.error('Error logging message:', error);
+        }
+    }
+
+    // Welcome Settings Methods
+    getWelcomeSettings(guildId) {
+        try {
+            const stmt = this.db.prepare('SELECT * FROM welcome_settings WHERE guild_id = ?');
+            return stmt.get(guildId);
+        } catch (error) {
+            console.error('Error getting welcome settings:', error);
+            return null;
+        }
+    }
+
+    setWelcomeSettings(guildId, settings) {
+        try {
+            // First, ensure guild exists in guild_settings
+            this.getGuildSettings(guildId);
+            
+            const stmt = this.db.prepare(`
+                INSERT OR REPLACE INTO welcome_settings (
+                    guild_id, enabled, channel_id, welcome_enabled, goodbye_enabled,
+                    welcome_message, goodbye_message, welcome_count, goodbye_count,
+                    embed_enabled, embed_color, ping_user, delete_after, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            `);
+            
+            const currentSettings = this.getWelcomeSettings(guildId) || {};
+            
+            stmt.run(
+                guildId,
+                settings.enabled !== undefined ? settings.enabled : currentSettings.enabled || false,
+                settings.channelId !== undefined ? settings.channelId : currentSettings.channel_id,
+                settings.welcomeEnabled !== undefined ? settings.welcomeEnabled : currentSettings.welcome_enabled || false,
+                settings.goodbyeEnabled !== undefined ? settings.goodbyeEnabled : currentSettings.goodbye_enabled || false,
+                settings.welcomeMessage !== undefined ? settings.welcomeMessage : currentSettings.welcome_message,
+                settings.goodbyeMessage !== undefined ? settings.goodbyeMessage : currentSettings.goodbye_message,
+                settings.welcomeCount !== undefined ? settings.welcomeCount : currentSettings.welcome_count || 0,
+                settings.goodbyeCount !== undefined ? settings.goodbyeCount : currentSettings.goodbye_count || 0,
+                settings.embedEnabled !== undefined ? settings.embedEnabled : currentSettings.embed_enabled !== false,
+                settings.embedColor !== undefined ? settings.embedColor : currentSettings.embed_color || '#7289DA',
+                settings.pingUser !== undefined ? settings.pingUser : currentSettings.ping_user !== false,
+                settings.deleteAfter !== undefined ? settings.deleteAfter : currentSettings.delete_after || 0
+            );
+            
+            return true;
+        } catch (error) {
+            console.error('Error setting welcome settings:', error);
+            return false;
+        }
+    }
+
+    incrementWelcomeCount(guildId, type = 'welcome') {
+        try {
+            const column = type === 'welcome' ? 'welcome_count' : 'goodbye_count';
+            const stmt = this.db.prepare(`
+                UPDATE welcome_settings 
+                SET ${column} = ${column} + 1, updated_at = CURRENT_TIMESTAMP
+                WHERE guild_id = ?
+            `);
+            stmt.run(guildId);
+        } catch (error) {
+            console.error('Error incrementing welcome count:', error);
         }
     }
 

@@ -8,6 +8,8 @@ const { loadCommands } = require('./handlers/commandHandler');
 const { handleMessage } = require('./handlers/messageHandler');
 const config = require('./config/botConfig');
 const loggingHandler = require('./handlers/loggingHandler');
+const welcomeHandler = require('./handlers/welcomeHandler');
+const buttonHandler = require('./handlers/buttonHandler');
 const db = require('./database/database');
 const { ActivityType } = require('discord.js');
 
@@ -129,6 +131,19 @@ client.on('guildCreate', (guild) => {
 // Event: Bot leaves a guild
 client.on('guildDelete', (guild) => {
     console.log(`😢 Left server: ${guild.name} (${guild.id})`);
+});
+
+// Welcome/Goodbye Events
+client.on('guildMemberAdd', welcomeHandler.handleMemberJoin);
+client.on('guildMemberRemove', welcomeHandler.handleMemberLeave);
+
+// Button/Modal Interactions
+client.on('interactionCreate', async (interaction) => {
+    if (interaction.isButton()) {
+        await buttonHandler.handleButtonInteraction(interaction);
+    } else if (interaction.isModalSubmit()) {
+        await buttonHandler.handleModalSubmit(interaction);
+    }
 });
 
 // Logging Events
